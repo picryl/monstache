@@ -1,0 +1,8 @@
+version: "2.3"
+
+services:
+  es7:
+    environment:
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m

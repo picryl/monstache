@@ -1,0 +1,7 @@
+version: "2.3"
+
+services:
+  es7:
+    environment:
+      - DISABLE_SECURITY_PLUGIN=true
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m

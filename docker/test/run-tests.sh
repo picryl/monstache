@@ -5,9 +5,10 @@ set -euo pipefail
 export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-monstache}"
 export SEARCH_FLAVOR="${SEARCH_FLAVOR:-elasticsearch}"
 export SEARCH_IMAGE="${SEARCH_IMAGE:-docker.elastic.co/elasticsearch/elasticsearch-oss:7.0.0}"
+export MONGO_IMAGE="${MONGO_IMAGE:-mongo:4.1-xenial}"
 export TEST_RESULTS_DIR="${TEST_RESULTS_DIR:-$PWD/test-results}"
 export TEST_REPORT_JSON="${TEST_REPORT_JSON:-/test-results/go-test.json}"
-export TEST_REPORT_TITLE="${TEST_REPORT_TITLE:-E2E tests ($SEARCH_FLAVOR: $SEARCH_IMAGE)}"
+export TEST_REPORT_TITLE="${TEST_REPORT_TITLE:-E2E tests ($MONGO_IMAGE, $SEARCH_FLAVOR: $SEARCH_IMAGE)}"
 
 compose_files=(-f docker-compose.test.yml)
 host_report_json="$TEST_RESULTS_DIR/$(basename "$TEST_REPORT_JSON")"
@@ -15,6 +16,10 @@ host_report_markdown="$TEST_RESULTS_DIR/go-test-summary.md"
 
 if [ "$SEARCH_FLAVOR" = "opensearch" ]; then
   compose_files+=(-f docker-compose.opensearch.yml)
+elif [ "$SEARCH_FLAVOR" = "opensearch-modern" ]; then
+  compose_files+=(-f docker-compose.opensearch-modern.yml)
+elif [ "$SEARCH_FLAVOR" = "elasticsearch-modern" ]; then
+  compose_files+=(-f docker-compose.elasticsearch-modern.yml)
 elif [ "$SEARCH_FLAVOR" != "elasticsearch" ]; then
   echo "Unsupported SEARCH_FLAVOR: $SEARCH_FLAVOR" >&2
   exit 1
