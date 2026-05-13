@@ -15,5 +15,5 @@ MONGO_KEY_FILE="$keyfile" MONGO_REPLICA_SET_KEY="$keyvalue" ./mongo-keyfile.sh >
 grep -F "$keyfile" "$tmpdir/path"
 grep -F "$keyvalue" "$keyfile"
 
-mode="$(stat -f '%Lp' "$keyfile" 2>/dev/null || stat -c '%a' "$keyfile")"
+mode="$(stat -c '%a' "$keyfile" 2>/dev/null || stat -f '%Lp' "$keyfile")"
 test "$mode" = "400"
