@@ -91,12 +91,13 @@ services:
     restart: unless-stopped
 
   es7:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.0.0
+    image: ${SEARCH_IMAGE:-docker.elastic.co/elasticsearch/elasticsearch-oss:7.0.0}
     logging:
       driver: none
     container_name: c-es
     environment:
         - discovery.type=single-node
+        - ES_JAVA_OPTS=-Xms512m -Xmx512m
     # volumes:
     #   - ./elasticsearch/elasticsearch.config.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     ports:
@@ -104,7 +105,7 @@ services:
     networks:
       - test
     healthcheck:
-      test: "wget -q -O - http://localhost:9200/_cat/health"
+      test: "curl -fsS http://localhost:9200/_cluster/health || wget -q -O - http://localhost:9200/_cluster/health"
       interval: 1s
       timeout: 30s
       retries: 300

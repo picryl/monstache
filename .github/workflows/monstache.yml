@@ -6,11 +6,33 @@ on:
 
 jobs:
   test:
-    name: Run tests
+    name: Run e2e tests (${{ matrix.search.name }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        search:
+          # Monstache rel6 documents Elasticsearch 7.0+ support and uses the
+          # Elasticsearch 7 client. OpenSearch jobs run in Elasticsearch
+          # compatibility mode.
+          - name: elasticsearch-7.0.0
+            flavor: elasticsearch
+            image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.0.0
+          - name: elasticsearch-7.17.29
+            flavor: elasticsearch
+            image: docker.elastic.co/elasticsearch/elasticsearch:7.17.29
+          - name: opensearch-1.3.19
+            flavor: opensearch
+            image: opensearchproject/opensearch:1.3.19
+          - name: opensearch-2.19.5
+            flavor: opensearch
+            image: opensearchproject/opensearch:2.19.5
     steps:
       - uses: actions/checkout@v6
-      - name: Run tests
+      - name: Run e2e tests
+        env:
+          SEARCH_FLAVOR: ${{ matrix.search.flavor }}
+          SEARCH_IMAGE: ${{ matrix.search.image }}
         run: |
           cd docker/test
           ./run-tests.sh
