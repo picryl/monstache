@@ -29,10 +29,21 @@ jobs:
             image: opensearchproject/opensearch:2.19.5
     steps:
       - uses: actions/checkout@v6
+      - name: Verify test report renderer
+        run: docker/test/go-test-summary_test.sh
       - name: Run e2e tests
         env:
           SEARCH_FLAVOR: ${{ matrix.search.flavor }}
           SEARCH_IMAGE: ${{ matrix.search.image }}
+          TEST_REPORT_TITLE: E2E tests (${{ matrix.search.name }})
         run: |
           cd docker/test
           ./run-tests.sh
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: go-test-report-${{ matrix.search.name }}
+          path: docker/test/test-results/
+          if-no-files-found: warn
+          retention-days: 14

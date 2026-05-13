@@ -35,11 +35,18 @@ services:
   sut:
     image: rwynn/monstache-test-runner
     container_name: c-sut
-    command: go test -v
+    command: >
+      sh -c 'mkdir -p "$$(dirname "$$TEST_REPORT_JSON")";
+      go test -json > "$$TEST_REPORT_JSON";
+      status=$$?;
+      cat "$$TEST_REPORT_JSON";
+      exit $$status'
     build:
       context: ../..
       dockerfile: ./docker/test/Dockerfile
     working_dir: /app
+    volumes:
+      - ${TEST_RESULTS_DIR:-./test-results}:/test-results
     depends_on:
       mongo-0:
         condition: service_started
@@ -50,6 +57,7 @@ services:
     environment:
       MONGO_DB_URL: 'mongodb://root-user:password@mongo-0:27017'
       ELASTIC_SEARCH_URL: 'http://es7:9200'
+      TEST_REPORT_JSON: ${TEST_REPORT_JSON:-/test-results/go-test.json}
     networks:
       - test
 

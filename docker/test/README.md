@@ -10,6 +10,9 @@ The default search image is Elasticsearch OSS `7.0.0`.
 ./run-tests.sh
 ```
 
+Each run writes `go test -json` output and a Markdown summary to `test-results/`. In GitHub Actions,
+`run-tests.sh` appends the Markdown report to the workflow summary page for the matrix job.
+
 Set `SEARCH_IMAGE` to test another Elasticsearch 7 image.
 
 ```sh
