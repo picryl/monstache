@@ -45,6 +45,7 @@ jobs:
           docker/test/go-test-summary_test.sh
           docker/test/mongodb/scripts/mongo-shell_test.sh
           docker/test/mongodb/scripts/mongo-keyfile_test.sh
+          docker/test/mongodb/scripts/mongo-users-setup_test.sh
       - name: Run e2e tests
         env:
           MONGO_IMAGE: ${{ matrix.target.mongo_image }}

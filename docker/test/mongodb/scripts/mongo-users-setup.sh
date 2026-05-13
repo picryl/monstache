@@ -61,7 +61,7 @@ else
 fi
 
 # create backup user
-if [ ! -z "${MONGO_USER_APP_NAME+x}" ] && [ ! -z "${MONGO_USER_APP_PASSWORD+x}" ] ; then
+if [ ! -z "${MONGO_USER_BACKUP_NAME+x}" ] && [ ! -z "${MONGO_USER_BACKUP_PASSWORD+x}" ] ; then
   ./mongo-shell.sh admin --eval "db.createUser({ user: '$MONGO_USER_BACKUP_NAME', pwd: '$MONGO_USER_BACKUP_PASSWORD', roles: [{ role: 'backup', db: 'admin' }]});"
 else
   echo 'WARNING: Mongo backup user credentials are not provided!';
