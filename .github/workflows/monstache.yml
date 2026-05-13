@@ -6,36 +6,52 @@ on:
 
 jobs:
   test:
-    name: Run e2e tests (${{ matrix.search.name }})
+    name: Run e2e tests (${{ matrix.target.name }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        search:
-          # Monstache rel6 documents Elasticsearch 7.0+ support and uses the
-          # Elasticsearch 7 client. OpenSearch jobs run in Elasticsearch
-          # compatibility mode.
-          - name: elasticsearch-7.0.0
-            flavor: elasticsearch
-            image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.0.0
-          - name: elasticsearch-7.17.29
-            flavor: elasticsearch
-            image: docker.elastic.co/elasticsearch/elasticsearch:7.17.29
-          - name: opensearch-1.3.19
-            flavor: opensearch
-            image: opensearchproject/opensearch:1.3.19
-          - name: opensearch-2.19.5
-            flavor: opensearch
-            image: opensearchproject/opensearch:2.19.5
+        target:
+          # Baseline coverage preserves the documented Elasticsearch 7 support.
+          - name: mongodb-4.1-elasticsearch-7.0.0
+            mongo_image: mongo:4.1-xenial
+            search_flavor: elasticsearch
+            search_image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.0.0
+          - name: mongodb-4.1-elasticsearch-7.17.29
+            mongo_image: mongo:4.1-xenial
+            search_flavor: elasticsearch
+            search_image: docker.elastic.co/elasticsearch/elasticsearch:7.17.29
+          - name: mongodb-4.1-opensearch-1.3.19
+            mongo_image: mongo:4.1-xenial
+            search_flavor: opensearch
+            search_image: opensearchproject/opensearch:1.3.19
+          - name: mongodb-4.1-opensearch-2.19.5
+            mongo_image: mongo:4.1-xenial
+            search_flavor: opensearch
+            search_image: opensearchproject/opensearch:2.19.5
+          # Latest stable server coverage.
+          - name: mongodb-8.3.2-elasticsearch-9.4.1
+            mongo_image: mongodb/mongodb-community-server:8.3.2-ubi9
+            search_flavor: elasticsearch-modern
+            search_image: docker.elastic.co/elasticsearch/elasticsearch:9.4.1
+          - name: mongodb-8.3.2-opensearch-3.6.0
+            mongo_image: mongodb/mongodb-community-server:8.3.2-ubi9
+            search_flavor: opensearch-modern
+            search_image: opensearchproject/opensearch:3.6.0
     steps:
       - uses: actions/checkout@v6
-      - name: Verify test report renderer
-        run: docker/test/go-test-summary_test.sh
+      - name: Verify test helper scripts
+        run: |
+          docker/test/go-test-summary_test.sh
+          docker/test/mongodb/scripts/mongo-shell_test.sh
+          docker/test/mongodb/scripts/mongo-keyfile_test.sh
+          docker/test/mongodb/scripts/mongo-users-setup_test.sh
       - name: Run e2e tests
         env:
-          SEARCH_FLAVOR: ${{ matrix.search.flavor }}
-          SEARCH_IMAGE: ${{ matrix.search.image }}
-          TEST_REPORT_TITLE: E2E tests (${{ matrix.search.name }})
+          MONGO_IMAGE: ${{ matrix.target.mongo_image }}
+          SEARCH_FLAVOR: ${{ matrix.target.search_flavor }}
+          SEARCH_IMAGE: ${{ matrix.target.search_image }}
+          TEST_REPORT_TITLE: E2E tests (${{ matrix.target.name }})
         run: |
           cd docker/test
           ./run-tests.sh
@@ -43,7 +59,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: go-test-report-${{ matrix.search.name }}
+          name: go-test-report-${{ matrix.target.name }}
           path: docker/test/test-results/
           if-no-files-found: warn
           retention-days: 14
