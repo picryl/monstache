@@ -1,3 +1,4 @@
+version: 2
 before:
   hooks:
     - go mod download
@@ -27,11 +28,12 @@ archives:
       {{- else -}}v{{- . -}}
       {{- end -}}
     {{- end -}}
-  builds:
+  ids:
     - monstache
   format_overrides:
     - goos: windows
-      format: zip
+      formats:
+        - zip
   files: ["LICENSE"]
 checksum:
   name_template: "checksums.txt"

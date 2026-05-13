@@ -35,11 +35,18 @@ services:
   sut:
     image: rwynn/monstache-test-runner
     container_name: c-sut
-    command: go test -v
+    command: >
+      sh -c 'mkdir -p "$$(dirname "$$TEST_REPORT_JSON")";
+      go test -json > "$$TEST_REPORT_JSON";
+      status=$$?;
+      cat "$$TEST_REPORT_JSON";
+      exit $$status'
     build:
       context: ../..
       dockerfile: ./docker/test/Dockerfile
     working_dir: /app
+    volumes:
+      - ${TEST_RESULTS_DIR:-./test-results}:/test-results
     depends_on:
       mongo-0:
         condition: service_started
@@ -50,6 +57,7 @@ services:
     environment:
       MONGO_DB_URL: 'mongodb://root-user:password@mongo-0:27017'
       ELASTIC_SEARCH_URL: 'http://es7:9200'
+      TEST_REPORT_JSON: ${TEST_REPORT_JSON:-/test-results/go-test.json}
     networks:
       - test
 
@@ -91,12 +99,13 @@ services:
     restart: unless-stopped
 
   es7:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.0.0
+    image: ${SEARCH_IMAGE:-docker.elastic.co/elasticsearch/elasticsearch-oss:7.0.0}
     logging:
       driver: none
     container_name: c-es
     environment:
         - discovery.type=single-node
+        - ES_JAVA_OPTS=-Xms512m -Xmx512m
     # volumes:
     #   - ./elasticsearch/elasticsearch.config.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     ports:
@@ -104,7 +113,7 @@ services:
     networks:
       - test
     healthcheck:
-      test: "wget -q -O - http://localhost:9200/_cat/health"
+      test: "curl -fsS http://localhost:9200/_cluster/health || wget -q -O - http://localhost:9200/_cluster/health"
       interval: 1s
       timeout: 30s
       retries: 300
