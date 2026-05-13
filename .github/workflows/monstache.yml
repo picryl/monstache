@@ -2,7 +2,7 @@ name: Monstache CI
 
 on:
   push:
-    branches: [ '*' ]
+    branches: [ '**' ]
 
 jobs:
   test:
