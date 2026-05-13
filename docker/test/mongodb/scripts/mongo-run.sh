@@ -55,6 +55,7 @@ cmd="$cmd --bind_ip 0.0.0.0"
 
 if [[ "$MONGO_REPLICA_SET_NAME" ]] ; then
   cmd="$cmd --replSet $MONGO_REPLICA_SET_NAME"
+  cmd="$cmd --keyFile $(./mongo-keyfile.sh)"
 fi
 
 cmd="$cmd --dbpath /data/db"
@@ -73,7 +74,7 @@ $cmd &
 ./mongo-db-setup.sh
 
 # Create the health.check file indicating healthy
-MONGO_CONTAINER_HEALTHCHECK_FILE_PATH=${MONGO_CONTAINER_HEALTHCHECK_FILE_PATH:-/data/health.check}
+MONGO_CONTAINER_HEALTHCHECK_FILE_PATH=${MONGO_CONTAINER_HEALTHCHECK_FILE_PATH:-/data/db/health.check}
 echo '1' >> "$MONGO_CONTAINER_HEALTHCHECK_FILE_PATH"
 
 fg
